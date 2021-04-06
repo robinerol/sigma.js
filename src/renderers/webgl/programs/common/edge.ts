@@ -45,6 +45,10 @@ export function createEdgeCompoundProgram(programClasses: Array<EdgeProgramConst
       this.programs = programClasses.map((ProgramClass) => new ProgramClass(gl));
     }
 
+    bindBuffer(): void {
+      // nothing todo, it's already done in each program constructor
+    }
+
     bufferData(): void {
       this.programs.forEach((program) => program.bufferData());
     }

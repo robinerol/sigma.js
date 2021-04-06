@@ -73,6 +73,7 @@ export default class WebGLRenderer extends EventEmitter {
   renderHighlightedNodesFrame: number | null = null;
   needToProcess = false;
   needToSoftProcess = false;
+  nodeTypes: Record<string, Array<NodeKey>> = {};
 
   // programs
   nodePrograms: { [key: string]: INodeProgram } = {};
@@ -472,9 +473,9 @@ export default class WebGLRenderer extends EventEmitter {
     // Rescaling function
     this.normalizationFunction = createNormalizationFunction(this.nodeExtent);
 
-    const nodeProgram = this.nodePrograms[this.settings.defaultNodeType];
+    // const nodeProgram = this.nodePrograms[this.settings.defaultNodeType];
 
-    if (!keepArrays) nodeProgram.allocate(graph.order);
+    // if (!keepArrays) nodeProgram.allocate(graph.order);
 
     let nodes: NodeKey[] = graph.nodes();
 
@@ -489,27 +490,51 @@ export default class WebGLRenderer extends EventEmitter {
         nodes,
       );
 
-    for (let i = 0, l = nodes.length; i < l; i++) {
-      const node = nodes[i];
-
-      let data = graph.getNodeAttributes(node) as NodeAttributes;
-
-      const displayData = this.nodeDataCache[node];
-
-      if (settings.nodeReducer) data = settings.nodeReducer(node, data);
-
-      // TODO: should assign default also somewhere here if there is a reducer
-      displayData.assign(data);
-      this.normalizationFunction.applyTo(displayData);
-
-      this.quadtree.add(node, displayData.x, 1 - displayData.y, displayData.size / this.width);
-
-      nodeProgram.process(displayData, i);
-
-      displayData.index = i;
+    // process nodes
+    for (const program in this.nodePrograms) {
+      this.nodeTypes[program] = new Array<NodeKey>();
     }
 
-    nodeProgram.bufferData();
+    // sort nodes by their type
+    nodes.forEach((node) => {
+      const type = graph.getNodeAttribute(node, "type") ?? this.settings.defaultNodeType;
+      this.nodeTypes[type].push(node);
+    });
+
+    for (const type in this.nodeTypes) {
+      const nodes = this.nodeTypes[type];
+
+      if (nodes.length <= 0) {
+        continue;
+      }
+
+      const nodeProgram = this.nodePrograms[type];
+      nodeProgram.bindBuffer();
+
+      if (!keepArrays) nodeProgram.allocate(nodes.length);
+
+      for (let i = 0, l = nodes.length; i < l; i++) {
+        const node = nodes[i];
+
+        let data = graph.getNodeAttributes(node) as NodeAttributes;
+
+        const displayData = this.nodeDataCache[node];
+
+        if (settings.nodeReducer) data = settings.nodeReducer(node, data);
+
+        // TODO: should assign default also somewhere here if there is a reducer
+        displayData.assign(data);
+        this.normalizationFunction?.applyTo(displayData);
+
+        this.quadtree.add(node, displayData.x, 1 - displayData.y, displayData.size / this.width);
+
+        nodeProgram.process(displayData, i);
+
+        displayData.index = i;
+      }
+
+      nodeProgram.bufferData();
+    }
 
     const edgeProgram = this.edgePrograms[this.settings.defaultEdgeType];
 
@@ -555,9 +580,11 @@ export default class WebGLRenderer extends EventEmitter {
    * @return {WebGLRenderer}
    */
   processNode(key: NodeKey): WebGLRenderer {
-    const nodeProgram = this.nodePrograms[this.settings.defaultNodeType];
-
     const data = this.graph.getNodeAttributes(key) as NodeAttributes;
+
+    // check for node type and take default if not available
+    const type = data.type && data.type !== "" ? data.type : this.settings.defaultNodeType;
+    const nodeProgram = this.nodePrograms[type];
 
     nodeProgram.process(data, this.nodeDataCache[key].index);
 
@@ -731,16 +758,20 @@ export default class WebGLRenderer extends EventEmitter {
     let program;
 
     // Drawing nodes
-    program = this.nodePrograms[this.settings.defaultNodeType];
+    for (const program in this.nodePrograms) {
+      if (this.nodeTypes[program].length <= 0) {
+        continue;
+      }
 
-    program.render({
-      matrix: cameraMatrix,
-      width: this.width,
-      height: this.height,
-      ratio: cameraState.ratio,
-      nodesPowRatio: 0.5,
-      scalingRatio: WEBGL_OVERSAMPLING_RATIO,
-    });
+      this.nodePrograms[program].render({
+        matrix: cameraMatrix,
+        width: this.width,
+        height: this.height,
+        ratio: cameraState.ratio,
+        nodesPowRatio: 0.5,
+        scalingRatio: WEBGL_OVERSAMPLING_RATIO,
+      });
+    }
 
     // Drawing edges
     if (!this.settings.hideEdgesOnMove || !moving) {

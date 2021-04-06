@@ -15,6 +15,7 @@ export interface RenderParams {
 }
 
 export interface IProgram {
+  bindBuffer(): void;
   bufferData(): void;
   allocate(capacity: number): void;
   bind(): void;
@@ -54,11 +55,16 @@ export abstract class AbstractProgram implements IProgram {
     if (buffer === null)
       throw new Error("sigma/renderers/webgl/program/program.Program: error while creating the buffer");
     this.buffer = buffer;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+    this.bindBuffer();
 
     this.vertexShader = loadVertexShader(gl, this.vertexShaderSource);
     this.fragmentShader = loadFragmentShader(gl, this.fragmentShaderSource);
     this.program = loadProgram(gl, [this.vertexShader, this.fragmentShader]);
+  }
+
+  bindBuffer(): void {
+    const gl = this.gl;
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
   }
 
   bufferData(): void {

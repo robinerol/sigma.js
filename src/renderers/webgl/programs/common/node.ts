@@ -55,6 +55,8 @@ export abstract class AbstractNodeProgram extends AbstractProgram implements INo
   }
 
   bind(): void {
+    this.bindBuffer();
+
     const gl = this.gl;
 
     gl.enableVertexAttribArray(this.positionLocation);
@@ -100,6 +102,10 @@ export function createNodeCompoundProgram(programClasses: Array<NodeProgramConst
 
     constructor(gl: WebGLRenderingContext) {
       this.programs = programClasses.map((ProgramClass) => new ProgramClass(gl));
+    }
+
+    bindBuffer(): void {
+      // nothing todo, it's already done in each program constructor
     }
 
     bufferData(): void {
