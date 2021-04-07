@@ -43,6 +43,8 @@ export interface WebGLSettings {
   hideLabelsOnMove: boolean;
   renderLabels: boolean;
   renderEdgeLabels: boolean;
+  hideEdges: boolean;
+
   // Component rendering
   defaultNodeColor: string;
   defaultNodeType: string;
@@ -55,17 +57,21 @@ export interface WebGLSettings {
   edgeLabelFont: string;
   edgeLabelSize: number;
   edgeLabelWeight: string;
+
   // Labels
   labelGrid: {
     cell: { width: number; height: number } | null;
     renderedSizeThreshold: number;
   };
   labelSelector: typeof labelsToDisplayFromGrid;
+
   // Reducers
   nodeReducer: null | ((edge: NodeKey, data: NodeAttributes) => NodeAttributes);
   edgeReducer: null | ((node: EdgeKey, data: EdgeAttributes) => EdgeAttributes);
+
   // Features
   zIndex: boolean;
+
   // Renderers
   labelRenderer: typeof drawLabel;
   hoverRenderer: typeof drawHover;
@@ -82,6 +88,7 @@ export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
   hideLabelsOnMove: false,
   renderLabels: true,
   renderEdgeLabels: false,
+  hideEdges: false,
 
   // Component rendering
   defaultNodeColor: "#999",

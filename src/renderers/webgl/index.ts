@@ -717,6 +717,23 @@ export default class WebGLRenderer extends EventEmitter {
   }
 
   /**
+   * Method used to toggle whether edges should be rendered or not.
+   *
+   * @param hideEdges - whether the edges should be hidden or not, true: hides, false: renders edges
+   *
+   * @returns - the value before the change
+   */
+  toggleEdgeRendering(hideEdges: boolean): boolean {
+    const previousValue = this.settings.hideEdges;
+
+    this.settings.hideEdges = hideEdges;
+
+    this.refresh();
+
+    return previousValue;
+  }
+
+  /**
    * Method used to render.
    *
    * @return {WebGLRenderer}
@@ -755,8 +772,6 @@ export default class WebGLRenderer extends EventEmitter {
         height: this.height,
       });
 
-    let program;
-
     // Drawing nodes
     for (const program in this.nodePrograms) {
       if (this.nodeTypes[program].length <= 0) {
@@ -774,10 +789,8 @@ export default class WebGLRenderer extends EventEmitter {
     }
 
     // Drawing edges
-    if (!this.settings.hideEdgesOnMove || !moving) {
-      program = this.edgePrograms[this.settings.defaultEdgeType];
-
-      program.render({
+    if (!this.settings.hideEdges && (!this.settings.hideEdgesOnMove || !moving)) {
+      this.edgePrograms[this.settings.defaultEdgeType].render({
         matrix: cameraMatrix,
         width: this.width,
         height: this.height,
@@ -791,7 +804,7 @@ export default class WebGLRenderer extends EventEmitter {
     if (this.settings.hideLabelsOnMove && moving) return this;
 
     this.renderLabels();
-    this.renderEdgeLabels();
+    if (!this.settings.hideEdges) this.renderEdgeLabels();
     this.renderHighlightedNodes();
 
     return this;
