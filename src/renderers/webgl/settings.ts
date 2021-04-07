@@ -44,6 +44,7 @@ export interface WebGLSettings {
   renderLabels: boolean;
   renderEdgeLabels: boolean;
   hideEdges: boolean;
+  renderJustImportantEdges: boolean;
 
   // Component rendering
   defaultNodeColor: string;
@@ -89,6 +90,7 @@ export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
   renderLabels: true,
   renderEdgeLabels: false,
   hideEdges: false,
+  renderJustImportantEdges: false,
 
   // Component rendering
   defaultNodeColor: "#999",

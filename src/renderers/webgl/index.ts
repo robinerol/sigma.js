@@ -551,6 +551,8 @@ export default class WebGLRenderer extends EventEmitter {
 
       let data = graph.getEdgeAttributes(edge) as EdgeAttributes;
 
+      data.hidden = this.settings.renderJustImportantEdges && !data.important;
+
       const displayData = this.edgeDataCache[edge];
 
       if (settings.edgeReducer) data = settings.edgeReducer(edge, data);
@@ -731,6 +733,23 @@ export default class WebGLRenderer extends EventEmitter {
     this.refresh();
 
     return previousValue;
+  }
+
+  /**
+   * Method used to toggle whether just important edges should be rendered or all.
+   *
+   * @param justImportant - whether just important edges (true), or all (false)
+   *
+   * @returns - the value before the change
+   */
+  renderJustImportantEdges(justImportant: boolean): boolean {
+    const oldValue = this.settings.renderJustImportantEdges;
+
+    this.settings.renderJustImportantEdges = justImportant;
+
+    this.refresh();
+
+    return oldValue;
   }
 
   /**

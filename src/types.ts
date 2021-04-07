@@ -68,6 +68,7 @@ export interface EdgeAttributes {
   color: string;
   hidden: boolean;
   label: string;
+  important: boolean;
 }
 
 export interface EdgeWithKey extends EdgeAttributes {
@@ -80,6 +81,7 @@ export class Edge implements EdgeAttributes {
   color: string;
   hidden: boolean;
   label: string;
+  important: boolean;
 
   constructor(index: number, settings: WebGLSettings) {
     this.index = index;
@@ -87,6 +89,7 @@ export class Edge implements EdgeAttributes {
     this.color = settings.defaultEdgeColor;
     this.hidden = false;
     this.label = "";
+    this.important = false;
   }
 
   assign(data: Partial<Edge>): void {
