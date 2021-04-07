@@ -16,7 +16,7 @@ import { Coordinates, Edge, EdgeAttributes, Extent, Node, NodeAttributes } from 
 import { createElement, getPixelRatio, createNormalizationFunction, NormalizationFunction } from "../utils";
 import { matrixFromCamera } from "./utils";
 import { assign, cancelFrame, PlainObject, requestFrame } from "../../utils";
-import { labelsToDisplayFromGrid, edgeLabelsToDisplayFromNodes } from "../../heuristics/labels";
+import { edgeLabelsToDisplayFromNodes } from "../../heuristics/labels";
 import { zIndexOrdering } from "../../heuristics/z-index";
 import { WebGLSettings, WEBGL_RENDERER_DEFAULT_SETTINGS, validateWebglRendererSettings } from "./settings";
 import { INodeProgram } from "./programs/common/node";
@@ -829,7 +829,7 @@ export default class WebGLRenderer extends EventEmitter {
     // Selecting labels to draw
     const gridSettings = this.settings.labelGrid;
 
-    const labelsToDisplay = labelsToDisplayFromGrid({
+    const labelsToDisplay = this.settings.labelSelector({
       cache: this.nodeDataCache,
       camera: this.camera,
       cell: gridSettings.cell,

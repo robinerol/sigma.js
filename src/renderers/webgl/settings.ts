@@ -9,6 +9,7 @@ import LineEdgeProgram from "./programs/edge";
 import ArrowEdgeProgram from "./programs/edge.arrow";
 import { EdgeProgramConstructor } from "./programs/common/edge";
 import { NodeProgramConstructor } from "./programs/common/node";
+import { labelsToDisplayFromGrid } from "../../heuristics/labels";
 
 /**
  * Sigma.js WebGL Renderer Settings
@@ -50,6 +51,7 @@ export interface WebGLSettings {
   labelFont: string;
   labelSize: number;
   labelWeight: string;
+  labelFontColor: string;
   edgeLabelFont: string;
   edgeLabelSize: number;
   edgeLabelWeight: string;
@@ -58,6 +60,7 @@ export interface WebGLSettings {
     cell: { width: number; height: number } | null;
     renderedSizeThreshold: number;
   };
+  labelSelector: typeof labelsToDisplayFromGrid;
   // Reducers
   nodeReducer: null | ((edge: NodeKey, data: NodeAttributes) => NodeAttributes);
   edgeReducer: null | ((node: EdgeKey, data: EdgeAttributes) => EdgeAttributes);
@@ -88,6 +91,7 @@ export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
   labelFont: "Arial",
   labelSize: 14,
   labelWeight: "normal",
+  labelFontColor: "#000",
   edgeLabelFont: "Arial",
   edgeLabelSize: 14,
   edgeLabelWeight: "normal",
@@ -97,6 +101,7 @@ export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
     cell: null,
     renderedSizeThreshold: -Infinity,
   },
+  labelSelector: labelsToDisplayFromGrid,
 
   // Reducers
   nodeReducer: null,
