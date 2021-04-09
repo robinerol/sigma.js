@@ -46,6 +46,10 @@ export interface WebGLSettings {
   hideEdges: boolean;
   renderJustImportantEdges: boolean;
 
+  // Node backdrop
+  renderNodeBackdrop: boolean;
+  clusterColors: Record<number, string> | undefined;
+
   // Component rendering
   defaultNodeColor: string;
   defaultNodeType: string;
@@ -81,6 +85,7 @@ export interface WebGLSettings {
   // Program classes
   nodeProgramClasses: { [key: string]: NodeProgramConstructor };
   edgeProgramClasses: { [key: string]: EdgeProgramConstructor };
+  nodeBackdropProgram: NodeProgramConstructor | undefined;
 }
 
 export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
@@ -91,6 +96,10 @@ export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
   renderEdgeLabels: false,
   hideEdges: false,
   renderJustImportantEdges: false,
+
+  // Node backdrop
+  renderNodeBackdrop: false,
+  clusterColors: undefined,
 
   // Component rendering
   defaultNodeColor: "#999",
@@ -132,4 +141,5 @@ export const WEBGL_RENDERER_DEFAULT_SETTINGS: WebGLSettings = {
     arrow: ArrowEdgeProgram,
     line: LineEdgeProgram,
   },
+  nodeBackdropProgram: undefined,
 };

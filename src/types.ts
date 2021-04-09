@@ -31,6 +31,7 @@ export interface NodeAttributes extends Coordinates {
   hidden: boolean;
   label: string;
   type: string;
+  cluster: number;
 }
 
 export interface NodeWithKey extends NodeAttributes {
@@ -46,6 +47,7 @@ export class Node implements NodeAttributes {
   hidden: boolean;
   label: string;
   type: string;
+  cluster: number;
 
   constructor(index: number, settings: WebGLSettings) {
     this.index = index;
@@ -56,6 +58,7 @@ export class Node implements NodeAttributes {
     this.hidden = false;
     this.label = "";
     this.type = "";
+    this.cluster = 0;
   }
 
   assign(data: Partial<Node>): void {

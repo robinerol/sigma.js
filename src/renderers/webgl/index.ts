@@ -78,6 +78,7 @@ export default class WebGLRenderer extends EventEmitter {
   // programs
   nodePrograms: { [key: string]: INodeProgram } = {};
   edgePrograms: { [key: string]: IEdgeProgram } = {};
+  nodeBackdropProgram: INodeProgram | undefined = undefined;
 
   camera: Camera;
 
@@ -101,6 +102,7 @@ export default class WebGLRenderer extends EventEmitter {
     this.initializeCache();
 
     // Initializing contexts
+    if (this.settings.renderNodeBackdrop) this.createWebGLContext("nodeBackdrop");
     this.createWebGLContext("edges");
     this.createWebGLContext("nodes");
     this.createCanvasContext("edgeLabels");
@@ -119,6 +121,13 @@ export default class WebGLRenderer extends EventEmitter {
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
+    if (this.settings.renderNodeBackdrop) {
+      gl = this.webGLContexts.nodeBackdrop;
+
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      gl.enable(gl.BLEND);
+    }
+
     // Loading programs
     for (const type in this.settings.nodeProgramClasses) {
       const NodeProgramClass = this.settings.nodeProgramClasses[type];
@@ -127,6 +136,15 @@ export default class WebGLRenderer extends EventEmitter {
     for (const type in this.settings.edgeProgramClasses) {
       const EdgeProgramClass = this.settings.edgeProgramClasses[type];
       this.edgePrograms[type] = new EdgeProgramClass(this.webGLContexts.edges);
+    }
+    if (this.settings.renderNodeBackdrop) {
+      const NodeProgramClass = this.settings.nodeBackdropProgram;
+
+      if (!NodeProgramClass) {
+        throw new Error("sigma/renderers/webgl: renderNodeBackdrop is enabled but no program was provided");
+      }
+
+      this.nodeBackdropProgram = new NodeProgramClass(this.webGLContexts.nodeBackdrop);
     }
 
     // Initial resize
@@ -536,6 +554,39 @@ export default class WebGLRenderer extends EventEmitter {
       nodeProgram.bufferData();
     }
 
+    // process node backdrop
+    if (this.settings.renderNodeBackdrop && this.nodeBackdropProgram) {
+      this.nodeBackdropProgram.bindBuffer();
+
+      if (!keepArrays) this.nodeBackdropProgram.allocate(nodes.length);
+
+      for (let i = 0, l = nodes.length; i < l; i++) {
+        const node = nodes[i];
+
+        let data = graph.getNodeAttributes(node) as NodeAttributes;
+
+        const displayData = this.nodeDataCache[node];
+
+        if (settings.nodeReducer) data = settings.nodeReducer(node, data);
+
+        displayData.assign(data);
+
+        const clusterColors = this.settings.clusterColors;
+        if (clusterColors && data.cluster) displayData.color = clusterColors[data.cluster ?? 0];
+
+        this.normalizationFunction?.applyTo(displayData);
+
+        this.quadtree.add(node, displayData.x, 1 - displayData.y, displayData.size / this.width);
+
+        this.nodeBackdropProgram.process(displayData, i);
+
+        displayData.index = i;
+      }
+
+      this.nodeBackdropProgram.bufferData();
+    }
+
+    // process edges
     const edgeProgram = this.edgePrograms[this.settings.defaultEdgeType];
 
     if (!keepArrays) edgeProgram.allocate(graph.size);
@@ -589,6 +640,8 @@ export default class WebGLRenderer extends EventEmitter {
     const nodeProgram = this.nodePrograms[type];
 
     nodeProgram.process(data, this.nodeDataCache[key].index);
+
+    if (this.settings.renderNodeBackdrop) this.nodeBackdropProgram?.process(data, this.nodeDataCache[key].index);
 
     return this;
   }
@@ -790,6 +843,18 @@ export default class WebGLRenderer extends EventEmitter {
         width: this.width,
         height: this.height,
       });
+
+    // Drawing node backdrop
+    if (this.settings.renderNodeBackdrop && this.nodeBackdropProgram) {
+      this.nodeBackdropProgram.render({
+        matrix: cameraMatrix,
+        width: this.width,
+        height: this.height,
+        ratio: cameraState.ratio,
+        nodesPowRatio: 0.5,
+        scalingRatio: WEBGL_OVERSAMPLING_RATIO,
+      });
+    }
 
     // Drawing nodes
     for (const program in this.nodePrograms) {
