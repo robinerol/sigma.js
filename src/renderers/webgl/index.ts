@@ -124,7 +124,7 @@ export default class WebGLRenderer extends EventEmitter {
     if (this.settings.renderNodeBackdrop) {
       gl = this.webGLContexts.nodeBackdrop;
 
-      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.enable(gl.BLEND);
     }
 
@@ -565,6 +565,8 @@ export default class WebGLRenderer extends EventEmitter {
 
         let data = graph.getNodeAttributes(node) as NodeAttributes;
 
+        if (data.cluster === undefined) continue;
+
         const displayData = this.nodeDataCache[node];
 
         if (settings.nodeReducer) data = settings.nodeReducer(node, data);
@@ -572,7 +574,7 @@ export default class WebGLRenderer extends EventEmitter {
         displayData.assign(data);
 
         const clusterColors = this.settings.clusterColors;
-        if (clusterColors && data.cluster) displayData.color = clusterColors[data.cluster ?? 0];
+        if (clusterColors && data.cluster !== undefined) displayData.color = clusterColors[data.cluster];
 
         this.normalizationFunction?.applyTo(displayData);
 
