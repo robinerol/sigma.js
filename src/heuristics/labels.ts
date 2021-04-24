@@ -143,6 +143,9 @@ export function labelsToDisplayFromGrid(params: {
     const node = visibleNodes[i],
       nodeData = cache[node];
 
+    // skip if node is hidden
+    if (nodeData.hidden) continue;
+
     // We filter nodes having a rendered size less than a certain thresold
     if (nodeData.size / sizeRatio < renderedSizeThreshold) continue;
 
