@@ -102,7 +102,7 @@ export default class WebGLRenderer extends EventEmitter {
     this.initializeCache();
 
     // Initializing contexts
-    if (this.settings.renderNodeBackdrop) this.createWebGLContext("nodeBackdrop");
+    this.createWebGLContext("nodeBackdrop");
     this.createWebGLContext("edges");
     this.createWebGLContext("nodes");
     this.createCanvasContext("edgeLabels");
@@ -121,12 +121,10 @@ export default class WebGLRenderer extends EventEmitter {
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     gl.enable(gl.BLEND);
 
-    if (this.settings.renderNodeBackdrop) {
-      gl = this.webGLContexts.nodeBackdrop;
+    gl = this.webGLContexts.nodeBackdrop;
 
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.enable(gl.BLEND);
-    }
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
 
     // Loading programs
     for (const type in this.settings.nodeProgramClasses) {
@@ -137,15 +135,14 @@ export default class WebGLRenderer extends EventEmitter {
       const EdgeProgramClass = this.settings.edgeProgramClasses[type];
       this.edgePrograms[type] = new EdgeProgramClass(this.webGLContexts.edges);
     }
-    if (this.settings.renderNodeBackdrop) {
-      const NodeProgramClass = this.settings.nodeBackdropProgram;
 
-      if (!NodeProgramClass) {
-        throw new Error("sigma/renderers/webgl: renderNodeBackdrop is enabled but no program was provided");
-      }
+    const NodeProgramClass = this.settings.nodeBackdropProgram;
 
-      this.nodeBackdropProgram = new NodeProgramClass(this.webGLContexts.nodeBackdrop);
+    if (!NodeProgramClass) {
+      throw new Error("sigma/renderers/webgl: renderNodeBackdrop is enabled but no program was provided");
     }
+
+    this.nodeBackdropProgram = new NodeProgramClass(this.webGLContexts.nodeBackdrop);
 
     // Initial resize
     this.resize();
