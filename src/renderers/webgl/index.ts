@@ -943,6 +943,8 @@ export default class WebGLRenderer extends EventEmitter {
     const sizeRatio = Math.pow(cameraState.ratio, 0.5);
 
     for (let i = 0, l = labelsToDisplay.length; i < l; i++) {
+      if (this.graph.getNodeAttribute(labelsToDisplay[i], "hidden")) continue;
+
       const data = this.nodeDataCache[labelsToDisplay[i]];
 
       const { x, y } = this.camera.graphToViewport(this, data);
