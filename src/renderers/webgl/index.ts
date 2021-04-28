@@ -761,6 +761,7 @@ export default class WebGLRenderer extends EventEmitter {
    * @return {WebGLRenderer}
    */
   clear(): WebGLRenderer {
+    this.webGLContexts.nodeBackdrop.clear(this.webGLContexts.nodeBackdrop.COLOR_BUFFER_BIT);
     this.webGLContexts.nodes.clear(this.webGLContexts.nodes.COLOR_BUFFER_BIT);
     this.webGLContexts.edges.clear(this.webGLContexts.edges.COLOR_BUFFER_BIT);
     this.canvasContexts.labels.clearRect(0, 0, this.width, this.height);
